@@ -26,6 +26,12 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	exit 0
 fi
 
+# if iptables -L or iptables -F run without any prevention
+if [ "$1" = "-L" -o "$1" = "-F" ]; then
+	"$@"
+	exit 0
+fi
+
 if [ "$EUID" -ne 0 ]; then
 	echo "This script must be run as root."
 	echo "Please run:"
