@@ -20,6 +20,7 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	echo "Simply run 'sudo $0 iptables <iptables options>' to automatically restore the previous rules in case of a fuck-up, like preventing all incoming TCP traffic."
 	echo "For a more comfortable experience, you can either:"
 	echo "- add an alias for iptables in your shell rc file like 'alias iptables=\"sudo $0 iptables\"'"
+	echo "- add this repository's directory to your PATH"
 	echo "- copy this script to a directory in your PATH, like /usr/local/bin"
 	exit 0
 fi
