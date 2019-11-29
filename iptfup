@@ -15,19 +15,17 @@ function sigint_handler {
 	echo ""
 }
 
-trap sigint_handler INT
-
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	echo "This script is intended to prevent fuck-ups when setting a new iptables rule."
 	echo "Simply run 'sudo $0 iptables <iptables options>' to automatically restore the previous rules in case of a fuck-up, like preventing all incoming TCP traffic."
 	echo "For a more comfortable experience, you can either:"
 	echo "- add an alias for iptables in your shell rc file like 'alias iptables=\"sudo $0 iptables\"'"
-	echo "- copy this script to a directory in your PATH, like /usr/bin or /usr/local/bin"
+	echo "- copy this script to a directory in your PATH, like /usr/local/bin"
 	exit 0
 fi
 
 # if iptables -L or iptables -F run without any prevention
-if [ "$1" = "-L" -o "$1" = "-F" ]; then
+if [ "$2" = "-L" -o "$2" = "-F" ]; then
 	"$@"
 	exit 0
 fi
@@ -54,6 +52,8 @@ if [ $# -eq 1 ]; then
 	echo "iptables requires a rule as argument. Aborting..."
 	exit -1
 fi
+
+trap sigint_handler INT
 
 tmp_file=".tmp_iptables_state"
 if [ -f $tmp_file ]; then
