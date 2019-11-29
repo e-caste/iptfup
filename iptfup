@@ -44,6 +44,11 @@ if [ "$1" != "iptables" ]; then
 	exit -1
 fi
 
+if [ $# -eq 1 ]; then
+	echo "iptables requires a rule as argument. Aborting..."
+	exit -1
+fi
+
 tmp_file=".tmp_iptables_state"
 if [ -f $tmp_file ]; then
 	echo "$tmp_file already exists in this directory. Please rename it, move it or delete it to proceed."
