@@ -44,12 +44,12 @@ if [ $? -ne 0 ]; then
 	exit -1
 fi
 
-if [ "$1" != "iptables" ]; then
-	echo "I see you're a funny guy. This script only works with iptables though. Aborting..."
+if [ "$1" != "iptables" -a "$1" != "iptables-restore" ]; then
+	echo "I see you're a funny guy. This script only works with iptables and iptables-restore though. Aborting..."
 	exit -1
 fi
 
-if [ $# -eq 1 ]; then
+if [ "$1" == "iptables" -a $# -eq 1 ]; then
 	echo "iptables requires a rule as argument. Aborting..."
 	exit -1
 fi
@@ -63,16 +63,23 @@ if [ -f $tmp_file ]; then
 fi
 iptables-save > $tmp_file
 
-# run command unfolding all arguments
-echo "Running $@ as root."
-echo "If something goes wrong, this script will restore the previous iptables rules in 10 seconds."
-echo "" 
-"$@"
+	echo "Running $@ as root."
+	echo "If something goes wrong, this script will restore the previous iptables rules in 10 seconds."
+	echo "" 
+	if [ "$1" == "iptables" ]; then
+		# run iptables command unfolding all arguments
+		"$@"
+	elif [ "$1" == "iptables-restore" ]; then
+		# run iptables-restore command passing stdin
+		"$@" <&0
+	fi
 
+# force the read to happen on /dev/tty since if we're handling iptables-restore we have redirected stdin
 echo "Are these firewall rules working? y/N"
-read -t 10 ans
+read -t 10 </dev/tty
 
 echo ""
+
 # if $ans is no or there is no ans since the connection has been closed
 if [ -z $ans ]; then
 	restore_tables
