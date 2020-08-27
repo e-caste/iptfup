@@ -18,8 +18,15 @@ Done ✅
 
 ## Usage
 
-Simply use `iptables <new firewall rule>`. The iptables fuck-up prevention will come in handy if you ever make a mistake that would be irreparable without it.  
+Simply use `iptables <new firewall rule or policy>`. The iptables fuck-up prevention will come in handy if you ever make a mistake that would be irreparable without it. 
+
 Also supported:  
-`iptables -L` to list all the currently active rules  
-`iptables -F` to remove all the current rules  
-`iptables-restore < /path/to/iptables.rules` to restore a ruleset from a file1
+- `iptables -L` to list all the currently active rules
+- `iptables -F` to remove all the current rules
+- `iptables-restore < /path/to/iptables.rules` to restore a ruleset from a file
+
+The script also support saving rules directly to an arbitrary path without saving them to a temporary file first and then moving them to the desired location. The syntax is slightly different from the official `iptables-save`:
+
+`iptables-save /path/to/iptables.rules`
+
+If the file already exists a backup copy is created with the same name and the `.iptfup-backup` extension. If the backup file already exists it gets overwritten.
