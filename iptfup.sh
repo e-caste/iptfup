@@ -30,7 +30,7 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	echo ""
 	echo "For a more comfortable experience, you can either:"
 	echo "    - add an alias for iptables in your shell rc file, like:"
-	echo "	        - 'alias iptables=\"sudo $0 iptables\"'"
+	echo "          - 'alias iptables=\"sudo $0 iptables\"'"
 	echo "          - 'alias iptables-restore=\"sudo $0 iptables-restore\"'"
 	echo "          - 'alias iptables-save=\"sudo $0 iptables-save\"'"
 	echo "    - add this repository's directory to your PATH"
