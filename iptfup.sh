@@ -25,8 +25,8 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	exit 0
 fi
 
-# if iptables -L or iptables -F run without any prevention
-if [ "$2" = "-L" -o "$2" = "-F" ]; then
+# if iptables -L run without any prevention
+if [ "$2" = "-L" ]; then
 	"$@"
 	exit 0
 fi
