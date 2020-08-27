@@ -24,7 +24,8 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	echo ""
 	echo "A sub-command iptables-save is available to easily write the rules to disk without redirecting input to a local file and moving it."
 	echo "This command does not however use output redirection as iptables-save does as that happens at the shell level and can't be intercepted."
-	echo "Instead, the command accepts a filename as the only argument and writes the rules to that file."
+	echo "Instead, the command accepts a filename as the only argument and writes the rules to that file:"
+	echo "    - iptables-save <filename>"
 	echo "If a file in that location with the same name already exists it gets copied to a .iptfup-backup file first."
 	echo ""
 	echo "For a more comfortable experience, you can either:"
@@ -37,7 +38,14 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	exit 0
 fi
 
-if [ "$1" == "iptables" ]; then
+if [ "$EUID" -ne 0 ]; then
+	echo "This script must be run as root."
+	echo "Please run:"
+	echo "sudo $0 $@"
+	exit -1
+fi
+
+if [ "$1" = "iptables" ]; then
 	if [ $# -eq 1 ]; then
 		echo "iptables requires at least one argument. Aborting..."
 		exit -1
@@ -48,17 +56,13 @@ if [ "$1" == "iptables" ]; then
 		echo "This script is called iptables-fuck-up-prevention, it is useless without iptables. Aborting..."
 		exit -1
 	fi
-fi
-
-if [ "$1" == "iptables-restore" ]; then
+elif [ "$1" = "iptables-restore" ]; then
 	command -v iptables-restore &> /dev/null
 	if [ $? -ne 0 ]; then
 		echo "This script was unable to locate the iptables-restore binary. Aborting..."
 		exit -1
 	fi
-fi
-
-if [ "$1" == "iptables-save" ]; then
+elif [ "$1" = "iptables-save" ]; then
 	if [ $# -ne 2 ]; then
 		echo "iptables-save requires exactly one argument (the file name). Aborting..."
 		exit -1
@@ -69,17 +73,8 @@ if [ "$1" == "iptables-save" ]; then
 		echo "This script was unable to locate the iptables-save binary. Aborting..."
 		exit -1
 	fi
-fi
-
-if [ "$1" != "iptables" -a "$1" != "iptables-restore" -a "$1" != "iptables-save" ]; then
+else
 	echo "I see you're a funny guy. This script only works with iptables, iptables-restore and iptables-save though. Aborting..."
-	exit -1
-fi
-
-if [ "$EUID" -ne 0 ]; then
-	echo "This script must be run as root."
-	echo "Please run:"
-	echo "sudo $0 $@"
 	exit -1
 fi
 
