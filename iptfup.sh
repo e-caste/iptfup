@@ -8,6 +8,33 @@ function restore_tables {
 	echo "Restored old firewall rules."
 }
 
+# option 1: file to which save the rules
+# option 2: file to which save the backup
+function save_tables {
+	echo "Saving iptables rules to $1..."
+	echo ""
+
+	# If the file already exists then create a backup copy (and if a backup already exists, just overwrite it)
+	if [ -f "$1" ]; then
+		echo "Backing up existing file $1 to $2..."
+		echo ""
+
+		cp -f "$1" "$2" &>/dev/null
+		if [ $? -ne 0 ]; then
+			echo "Error creating backup copy. Make sure you provided a valid path. Aborting..."
+			exit -1
+		fi
+	fi
+
+	iptables-save > "$1"
+	if [ $? -ne 0 ]; then
+		echo "Error executing iptables-save. Make sure you provided a valid path. Aborting..."
+		exit -1
+	else
+		echo "Operation completed."
+	fi
+}
+
 function sigint_handler {
 	echo ""
 	echo "Ignoring SIGINT to prevent undeterministic behaviour."
@@ -35,6 +62,10 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 	echo "          - 'alias iptables-save=\"sudo $0 iptables-save\"'"
 	echo "    - add this repository's directory to your PATH"
 	echo "    - copy this script to a directory in your PATH, like /usr/local/bin"
+	echo ""
+	echo "The script accepts the following environment variables:"
+	echo "    - IPTFUP_TIMER         value of the countdown in seconds"
+	echo "    - IPTFUP_RULES_PATH    file to which automatically save rules upon confirmation"
 	exit 0
 fi
 
@@ -44,6 +75,8 @@ if [ "$EUID" -ne 0 ]; then
 	echo "sudo $0 $@"
 	exit -1
 fi
+
+trap sigint_handler INT
 
 if [ "$1" = "iptables" ]; then
 	if [ $# -eq 1 ]; then
@@ -73,6 +106,11 @@ elif [ "$1" = "iptables-save" ]; then
 		echo "This script was unable to locate the iptables-save binary. Aborting..."
 		exit -1
 	fi
+
+	save_tables "$2" "$2.iptfup-backup"
+
+	# exit now as we don't need confirmation
+	exit 0
 else
 	echo "I see you're a funny guy. This script only works with iptables, iptables-restore and iptables-save though. Aborting..."
 	exit -1
@@ -82,36 +120,6 @@ fi
 if [ "$2" = "-L" ]; then
 	"$@"
 	exit 0
-fi
-
-trap sigint_handler INT
-
-if [ "$1" == "iptables-save" ]; then
-	echo "Saving iptables rules to $2..."
-	echo ""
-
-	# If the file already exists then create a backup copy (and if a backup already exists, just overwrite it)
-	if [ -f "$2" ]; then
-		echo "Backing up existing file $2 to $2.iptfup-backup..."
-		echo ""
-
-		cp -f "$2" "$2.iptfup-backup" &>/dev/null
-		if [ $? -ne 0 ]; then
-			echo "Error creating backup copy. Make sure you provided a valid path. Aborting..."
-			exit -1
-		fi
-	fi
-
-	iptables-save > "$2"
-	if [ $? -ne 0 ]; then
-		echo "Error executing iptables-save. Make sure you provided a valid path. Aborting..."
-		exit -1
-	else
-		echo "Operation completed."
-
-		# Exit now as we don't need confirmation
-		exit 0
-	fi
 fi
 
 tmp_file=".tmp_iptables_state"
@@ -151,6 +159,12 @@ echo ""
 # this can happen if the user presses n or any other key or if the connection got closed by a bad rule
 if [ "$ans" = "y" -o "$ans" = "Y" ]; then
 	echo "Rules applied."
+
+	if [ ! -z $IPTFUP_RULES_PATH ]; then
+		backup="./iptfup-rules-backup"
+
+		save_tables $IPTFUP_RULES_PATH $backup
+	fi
 else
 	restore_tables
 fi

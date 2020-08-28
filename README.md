@@ -30,3 +30,9 @@ The script also support saving rules directly to an arbitrary path without savin
 `iptables-save /path/to/iptables.rules`
 
 If the file already exists a backup copy is created with the same name and the `.iptfup-backup` extension. If the backup file already exists it gets overwritten.
+
+## Environment variables
+
+`IPTFUP_TIMER` accepts a numeric value that represents the countdown timer in seconds. The default is 10 seconds.
+
+`IPTFUP_RULES_PATH` is the file to which iptfup will automatically save the rules upon confirmation. If left empty the rules will not be saved automatically. In case the file already exists it will be backed up to the current directory with the name `iptfup-rules-backup`. Subsequent backups to the same file will overwrite each other.
